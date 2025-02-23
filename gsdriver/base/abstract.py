@@ -488,8 +488,26 @@ PIPELINE_QUERY = lambda: Query(
     Variable(name="taskProgress", type="BOOLEAN", default=True),
 )
 
+DRIVER_QUERY = lambda: Query(
+    Variable(name="driverOptions", type="DICT", default=None),
+    Variable(name="reopenDelay", type="[FLOAT]", default=30.),
+    Variable(name="chromePath", type="STRING", default=str()),
+    Variable(name="downloadPath", type="STRING", default=str()),
+    Variable(name="loadImages", type="BOOLEAN", default=True),
+    Variable(name="headless", type="BOOLEAN", default=False),
+    Variable(name="incognito", type="BOOLEAN", default=False),
+    Variable(name="disableProxy", type="BOOLEAN", default=False),
+    Variable(name="ignoreCert", type="BOOLEAN", default=False),
+    Variable(name="loadTimeout", type="FLOAT", default=None),
+    Variable(name="implicitlyWait", type="FLOAT", default=None),
+    Variable(name="extensions", type="[STRING]", default=list()),
+    Variable(name="debuggingPort", type="INTEGER", default=None),
+    Variable(name="debuggingDir", type="STRING", default=None),
+    Variable(name="proxyPort", type="STRING", default=None),
+)
 
-def get_base_query(asyncio=False, encrypted=False, mapped=False, pipeline=False, **kwargs) -> Query:
+
+def get_base_query(asyncio=False, encrypted=False, mapped=False, pipeline=False, driver=False, **kwargs) -> Query:
     return Query(
         *FILTER_QUERY(mapped),
         *TIME_QUERY(),
@@ -500,6 +518,7 @@ def get_base_query(asyncio=False, encrypted=False, mapped=False, pipeline=False,
         *(ASYNC_QUERY() if asyncio else list()),
         *GCLOUD_QUERY(),
         *(ENCRYPTED_QUERY() if encrypted else list()),
+        *(DRIVER_QUERY() if driver else list()),
         *(PIPELINE_QUERY() if pipeline else list()),
     )
 

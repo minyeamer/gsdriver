@@ -12,10 +12,16 @@ REQUIRES = [
     "aiohttp>=3.9.1",
     "lxml>=4.9.4",
     "PyJWT>=2.9.0",
+    "selenium>=4.8.2",
+    "selenium-wire>=5.1.0",
+    "blinker==1.7.0",
+    "webdriver_manager>=4.0.1",
+    "pyperclip>=1.8.2",
     "gspread>=5.6.2",
     "google-cloud-bigquery>=3.4.0",
     "holidays>=0.43",
-    "workalendar>=17.0.0"]
+    "workalendar>=17.0.0",
+]
 
 setup(
     name="gcp-webdriver",

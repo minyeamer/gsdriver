@@ -1,5 +1,6 @@
 from .base.abstract import *
 from .base.gcloud import *
+from .base.selenium import *
 from .base.session import *
 from .base.spider import *
 from .base.types import *
@@ -12,4 +13,4 @@ from .utils.logs import *
 from .utils.map import *
 from .utils.request import *
 
-__version__ = "0.0.0"
+__version__ = "0.0.1"

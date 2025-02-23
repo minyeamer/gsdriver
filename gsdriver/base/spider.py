@@ -82,11 +82,13 @@ REDIRECT_UNIQUE = ["apiRedirect", "redirectUnit", "redirectUrl", "authorization"
 ENCRYPTED_UNIQUE = ["encryptedKey", "decryptedKey"]
 PIPELINE_UNIQUE = ["globalProgress", "asyncProgress", "taskProgress"]
 
+DRIVER_UNIQUE = ["driverOptions", "reopenDelay"]
+
 PROXY_LOG = ["logLevel", "logFile", "debugPoint", "killPoint", "extraSave"]
 
 WORKER_CONFIG = (
     FILTER_UNIQUE + TIME_UNIQUE + PROXY_LOG + REQUEST_UNIQUE +
-    SPIDER_UNIQUE + REDIRECT_UNIQUE + ENCRYPTED_UNIQUE + PIPELINE_UNIQUE)
+    SPIDER_UNIQUE + REDIRECT_UNIQUE + ENCRYPTED_UNIQUE + PIPELINE_UNIQUE + DRIVER_UNIQUE)
 WORKER_EXTRA = ["message", "where", "which", "by"]
 
 NAME, OPERATOR, TASK, DATANAME, DATATYPE = "name", "operator", "task", "dataName", "dataType"
