@@ -630,10 +630,9 @@ class SeleniumSpider(Spider):
         @functools.wraps(func)
         def wrapper(self: SeleniumSpider, *args, self_var=True, **context):
             args, context = self.init_context(args, context, self_var=self_var)
-            options = self.get_driver_options(**context)
-            with SeleniumWireDriver(**options) if self.enableWire else SeleniumDriver(**options) as driver:
-                data = func(self, *args, driver=driver, **SESSION_CONTEXT(**context))
-            self.sleep(.25)
+            self.run_driver(**self.get_driver_options(**context))
+            try: data = func(self, *args, **SESSION_CONTEXT(**context))
+            finally: self.quit_driver()
             self.with_data(data, func=func.__name__, **context)
             return data
         return wrapper
@@ -642,8 +641,8 @@ class SeleniumSpider(Spider):
         @functools.wraps(func)
         def wrapper(self: SeleniumSpider, *args, **context):
             self.run_driver(**self.get_driver_options(**context))
-            data = func(self, *args, **context)
-            self.quit_driver()
+            try: data = func(self, *args, **context)
+            finally: self.quit_driver()
             return data
         return wrapper
 
@@ -658,22 +657,21 @@ class SeleniumSpider(Spider):
         self.driver = SeleniumWireDriver(**options) if self.enableWire else SeleniumDriver(**options)
 
     @Spider.ignore_exception
-    def quit_driver(self, clear=False):
+    def quit_driver(self, clear=False, delay=0.25):
         if clear: self.driver.delete_all_cookies()
         self.driver.quit()
+        self.sleep(delay)
 
     def reopen_driver(self, driverOptions: Dict=dict(), reopenDelay: Range=30.):
-        self.quit_driver(clear=True)
+        self.quit_driver(clear=True, delay=0.)
         self.sleep(reopenDelay, minimum=1.)
         self.run_driver(**driverOptions)
 
     @Spider.ignore_exception
-    def refresh_driver(self, how: Literal["normal","hard"]="normal", delay=0.):
-        if how == "hard":
-            self.driver.refresh_hard(delay)
-        else:
-            self.driver.refresh()
-            self.sleep(delay)
+    def refresh_driver(self, how: Literal["normal","hard"]="normal", delay: Optional[Range]=None):
+        if how == "hard": self.driver.refresh_hard()
+        else: self.driver.refresh()
+        self.sleep(delay)
 
     def interrupt(self, *args, exception: Exception, func: Callable, retryCount=0, reopenDelay: Range=30., **context) -> Tuple[int,Any]:
         if self.driver is not None:
@@ -836,10 +834,9 @@ class SeleniumAsyncSpider(AsyncSpider, SeleniumSpider):
         @functools.wraps(func)
         async def wrapper(self: SeleniumSpider, *args, self_var=True, **context):
             args, context = self.init_context(args, context, self_var=self_var)
-            options = self.get_driver_options(**context)
-            with SeleniumWireDriver(**options) if self.enableWire else SeleniumDriver(**options) as driver:
-                data = await func(self, *args, driver=driver, **SESSION_CONTEXT(**context))
-            await asyncio.sleep(.25)
+            self.run_driver(**self.get_driver_options(**context))
+            try: data = await func(self, *args, **SESSION_CONTEXT(**context))
+            finally: self.quit_driver()
             self.with_data(data, func=func.__name__, **context)
             return data
         return wrapper
@@ -848,8 +845,8 @@ class SeleniumAsyncSpider(AsyncSpider, SeleniumSpider):
         @functools.wraps(func)
         async def wrapper(self: SeleniumSpider, *args, **context):
             self.run_driver(**self.get_driver_options(**context))
-            data = await func(self, *args, **context)
-            self.quit_driver()
+            try: data = await func(self, *args, **context)
+            finally: self.quit_driver()
             return data
         return wrapper
 
