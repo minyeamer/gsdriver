@@ -479,7 +479,7 @@ class SeleniumDriver(SeleniumBase):
 
     def get_cookies(self, encode=True, raw=False) -> Union[str,Dict,List]:
         if raw: return super().get_cookies()
-        elif encode: return '; '.join([cookie["name"]+'='+cookie["value"] for cookie in super().get_cookies()])
+        elif encode: return '; '.join([f'{cookie["name"]}={cookie["value"]}' for cookie in super().get_cookies()])
         else: return {cookie["name"]: cookie["value"] for cookie in super().get_cookies()}
 
     def set_cookies(self, session: requests.Session):
