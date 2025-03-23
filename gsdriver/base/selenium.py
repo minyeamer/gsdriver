@@ -225,25 +225,29 @@ def _match_request(request: Request, match: Dict[str,Any], how: Literal["and","o
 def _match_request_and(request: Request, match: Dict[str,Any], safe=True, **kwargs) -> bool:
     __match = True
     for __attr, __func in match.items():
-        if __attr == "response":
-            for __attr, __func in (__func if isinstance(__func, Dict) else dict()).items():
-                if __attr == "body": __match &= _match_response_body(request, __func, safe=safe, default=False, **kwargs)
-                else: __match &= _match_attr(getattr(request.response, __attr), __func, safe=safe, default=False)
-        else: __match &= _match_attr(getattr(request, __attr), __func, safe=safe, default=False)
+        try:
+            if __attr == "response":
+                for __attr, __func in (__func if isinstance(__func, Dict) else dict()).items():
+                    if __attr == "body": __match &= _match_response_body(request, __func, safe=safe, default=False, **kwargs)
+                    else: __match &= _match_attr(getattr(request.response, __attr), __func, safe=safe, default=False)
+            else: __match &= _match_attr(getattr(request, __attr), __func, safe=safe, default=False)
+        except: return False
     return __match
 
 
 def _match_request_or(request: Request, match: Dict[str,Any], safe=True, **kwargs) -> bool:
     for __attr, __func in match.items():
-        if __attr == "response":
-            for __attr, __func in (__func if isinstance(__func, Dict) else dict()).items():
-                if __attr == "body":
-                    if _match_response_body(request, __func, safe=safe, default=False, **kwargs): return True
+        try:
+            if __attr == "response":
+                for __attr, __func in (__func if isinstance(__func, Dict) else dict()).items():
+                    if __attr == "body":
+                        if _match_response_body(request, __func, safe=safe, default=False, **kwargs): return True
+                        else: pass
+                    elif _match_attr(getattr(request.response, __attr), __func, safe=safe, default=False): return True
                     else: pass
-                elif _match_attr(getattr(request.response, __attr), __func, safe=safe, default=False): return True
-                else: pass
-        elif _match_attr(getattr(request, __attr), __func, safe=safe, default=False): return True
-        else: pass
+            elif _match_attr(getattr(request, __attr), __func, safe=safe, default=False): return True
+            else: pass
+        except: pass
     return False
 
 
