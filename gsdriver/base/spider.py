@@ -17,7 +17,7 @@ from gsdriver.base.types import is_datetime_type, is_date_type, is_array, is_int
 
 from gsdriver.utils.cast import cast_list, cast_tuple, cast_int, cast_datetime_format
 from gsdriver.utils.date import get_random_seconds, get_date_pair, get_datetime_pair
-from gsdriver.utils.logs import log_encrypt, log_messages, log_response, log_client, log_data
+from gsdriver.utils.logs import log_object, log_encrypt, log_messages, log_response, log_client, log_data
 from gsdriver.utils.map import to_array, align_array, transpose_array, unit_array, get_scala, union, inter, diff
 from gsdriver.utils.map import kloc, hier_get, notna_dict, drop_dict, split_dict, traversal_dict
 from gsdriver.utils.map import vloc, apply_records, to_dataframe, write_df, convert_data, filter_data, regex_get
@@ -261,7 +261,7 @@ class UploadSession(GoogleUploader):
             status = ', '.join([f"({__i}) {__s}" for __i, __s in enumerate(status, start=1)])
         else: status = str(status)
         preview = text[:limit]+"..." if len(text) > limit else text
-        self.logger.info({"status":status, "text":preview})
+        self.logger.info(log_object({"status":status, "text":preview}))
 
 
 ###################################################################
@@ -862,7 +862,7 @@ class Spider(RequestSession, Iterator, Parser):
         url, params = self.encode_params(url, params, encode=encode)
         if headers and cookies: headers["Cookie"] = str(cookies)
         messages = messages if messages else notna_dict(params=params, data=data, json=json, headers=headers)
-        self.logger.debug(log_messages(**notna_dict({ITER_INDEX: context.get(ITER_INDEX)}), **messages, dump=self.logJson))
+        self.logger.debug(log_messages(**notna_dict({ITER_INDEX: context.get(ITER_INDEX)}), **messages))
         return dict(context, method=method, url=url, messages=messages)
 
     def _validate_session(self, context: Context) -> Context:
@@ -974,7 +974,7 @@ class Spider(RequestSession, Iterator, Parser):
             else: raise requests.ConnectionError(INVALID_STATUS_MSG(self.where))
 
     def log_results(self, data: Data, **context):
-        self.logger.info(log_data(data, **self.get_iterator(**context)))
+        self.logger.info(log_data(data, query=self.get_iterator(**context)))
 
     ###################################################################
     ######################### Redirect Request ########################
@@ -1563,7 +1563,7 @@ class LoginSpider(requests.Session, Spider):
                     headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context):
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             self.log_response_text(response, origin)
 
     @validate_request
@@ -1572,7 +1572,7 @@ class LoginSpider(requests.Session, Spider):
                         headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context) -> int:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             self.log_response_text(response, origin)
             return response.status_code
 
@@ -1582,7 +1582,7 @@ class LoginSpider(requests.Session, Spider):
                         headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context) -> bytes:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             self.log_response_text(response, origin)
             return response.content
 
@@ -1592,7 +1592,7 @@ class LoginSpider(requests.Session, Spider):
                     headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context) -> str:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             return response.text
 
     @validate_request
@@ -1601,7 +1601,7 @@ class LoginSpider(requests.Session, Spider):
                     headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context) -> JsonData:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             self.log_response_text(response, origin)
             return response.json()
 
@@ -1611,7 +1611,7 @@ class LoginSpider(requests.Session, Spider):
                     headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, **context) -> Dict:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             self.log_response_text(response, origin)
             return response.headers
 
@@ -1621,7 +1621,7 @@ class LoginSpider(requests.Session, Spider):
                     headers=None, cookies=str(), *args, origin=str(), allow_redirects=True, features="html.parser", **context) -> Tag:
         with self.request(method, url, **messages, allow_redirects=allow_redirects, **self.get_request_options()) as response:
             self.logger.info(log_response(response, url=url, origin=origin))
-            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin, dump=self.logJson))
+            self.logger.debug(log_messages(cookies=self.get_cookies(encode=False), origin=origin))
             return BeautifulSoup(response.text, features)
 
     def log_response_text(self, response: requests.Response, origin=str()):

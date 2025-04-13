@@ -13,7 +13,7 @@ from gsdriver.base.types import LogLevel, TypeHint, EncryptedKey, DecryptedKey
 from gsdriver.base.types import IndexLabel, Keyword, Unit, Range, Timedelta, Timezone, JsonData
 
 from gsdriver.utils.alert import AlertInfo
-from gsdriver.utils.logs import log_messages
+from gsdriver.utils.logs import log_object, log_messages
 from gsdriver.utils.map import notna_dict, search_keyword, get_scala
 from gsdriver.utils.request import get_headers, encode_params
 
@@ -710,10 +710,10 @@ class SeleniumSpider(Spider):
                         delay: Optional[Range]=None, ignore_exception=False, *args,
                         driver: ChromeDriver, **context) -> Union[str,JsonData,Tag]:
         messages = notna_dict(params=params, headers=headers)
-        self.logger.debug(log_messages(**notna_dict({ITER_INDEX: context.get(ITER_INDEX)}), url=url, params=params, dump=self.logJson))
+        self.logger.debug(log_messages(**notna_dict({ITER_INDEX: context.get(ITER_INDEX)}), **messages))
         self.checkpoint(iter_task(context, "request"), where="request_driver", msg=dict(url=url, **messages))
         response = driver.get(url, **messages, parse=None, delay=self.get_delay(delay), ignore_exception=ignore_exception)
-        self.logger.info(dict(url=url, **{"contents-length":len(response)}, **self.get_iterator(**context, _index=True)))
+        self.logger.info(log_object(dict(self.get_iterator(**context, _index=True), **{"url":url, "contents-length":len(response)})))
         self.checkpoint(iter_task(context, "response"), where="request_driver", msg={"response":response}, save=response)
         return driver.get_page_source(how, ignore_exception=ignore_exception) if how != SOURCE else response
 
@@ -743,7 +743,7 @@ class SeleniumSpider(Spider):
         response = driver.get_requests(match, how, index, None, parse, decoder, safe, with_url=True, **kwargs)
         for __url, __response in ([response] if isinstance(index, int) else response):
             self.checkpoint(iter_task(context, "driver"), where="get_response", msg={"response":__response}, save=__response)
-            self.logger.debug(log_messages(url=__url, match=match, dump=self.logJson))
+            self.logger.debug(log_messages(url=__url, match=match))
         return response[1] if isinstance(index, int) else [__response[1] for __response in response]
 
     ###################################################################
