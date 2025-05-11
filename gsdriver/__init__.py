@@ -13,4 +13,4 @@ from .utils.logs import *
 from .utils.map import *
 from .utils.request import *
 
-__version__ = "0.1.1"
+__version__ = "0.1.2"
