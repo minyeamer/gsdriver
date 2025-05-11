@@ -315,10 +315,10 @@ class SeleniumBase(webdriver.Chrome):
     process = None
 
     def set_service(self, chromePath=str(), debuggingPort: Optional[Port]=None, debuggingDir=str(),
-                    proxyPort: Optional[Port]=None, incognito=False) -> Service:
+                    proxyPort: Optional[Port]=None, headless=False, incognito=False) -> Service:
         if chromePath:
             if self.validate_port(debuggingPort) and debuggingDir:
-                self.run_debugging(chromePath, debuggingPort, debuggingDir, proxyPort, incognito)
+                self.run_debugging(chromePath, debuggingPort, debuggingDir, proxyPort, headless, incognito)
             else: return Service(executable_path=chromePath)
         try: return Service(executable_path=ChromeDriverManager().install())
         except: return Service(executable_path=r".\chromedriver.exe")
@@ -367,9 +367,11 @@ class SeleniumBase(webdriver.Chrome):
     ########################### Debug Driver ##########################
     ###################################################################
 
-    def run_debugging(self, chromePath: str, debuggingPort: int, debuggingDir: str, proxyPort: Optional[Port]=None, incognito=False) -> Service:
+    def run_debugging(self, chromePath: str, debuggingPort: int, debuggingDir: str, proxyPort: Optional[Port]=None,
+                    headless=False, incognito=False) -> Service:
         command = f'"{chromePath}" --remote-debugging-port={debuggingPort} --user-data-dir="{debuggingDir}"'
         if self.validate_port(proxyPort): command += f" --proxy-server=localhost:{proxyPort}"
+        if headless: command = command + " --headless"
         if incognito: command = command + " --incognito"
         self.process = subprocess.Popen(command)
 
@@ -464,7 +466,7 @@ class SeleniumDriver(SeleniumBase):
     def __init__(self, chromePath=str(), downloadPath=str(), headless=False, incognito=False, loadImages=True, disableProxy=False,
                 ignoreCert=False, loadTimeout: Optional[float]=None, implicitlyWait: Optional[float]=None, extensions: List[str]=list(),
                 debuggingPort: Optional[Port]=None, debuggingDir=str(), proxyPort: Optional[Port]=None, **kwargs):
-        service = self.set_service(chromePath, debuggingPort, debuggingDir, proxyPort, incognito)
+        service = self.set_service(chromePath, debuggingPort, debuggingDir, proxyPort, headless, incognito)
         options = self.set_options(downloadPath, headless, incognito, loadImages, disableProxy, ignoreCert, extensions, debuggingPort, proxyPort)
         super().__init__(service=service, options=options)
         self.set_timeout_and_wait(loadTimeout, implicitlyWait)
@@ -500,7 +502,7 @@ class SeleniumWireDriver(webdriver_wire.Chrome, SeleniumBase):
     def __init__(self, chromePath=str(), downloadPath=str(), headless=False, incognito=False, loadImages=True, disableProxy=False,
                 ignoreCert=False, loadTimeout: Optional[float]=None, implicitlyWait: Optional[float]=None, extensions: List[str]=list(),
                 debuggingPort: Optional[Port]=None, debuggingDir=str(), proxyPort: Optional[Port]=None, **kwargs):
-        service = self.set_service(chromePath, debuggingPort, debuggingDir, proxyPort, incognito)
+        service = self.set_service(chromePath, debuggingPort, debuggingDir, proxyPort, headless, incognito)
         options = self.set_options(downloadPath, headless, incognito, loadImages, disableProxy, ignoreCert, extensions, debuggingPort, proxyPort)
         seleniumwire_options = dict(port=int(proxyPort)) if self.validate_port(proxyPort) else None
         webdriver_wire.Chrome.__init__(self, service=service, options=options, seleniumwire_options=seleniumwire_options)
